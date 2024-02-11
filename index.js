@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
+const sequelize = require("./database");
 const { token } = require("./config.json");
 
 const client = new Client({
@@ -10,6 +11,11 @@ const client = new Client({
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
+
+sequelize
+  .authenticate()
+  .then(() => console.log("Database connected."))
+  .catch((err) => console.error("Unable to connect to the database:", err));
 
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder);
@@ -44,4 +50,14 @@ for (const file of eventFiles) {
   }
 }
 
-client.login(token);
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled promise rejection:", error);
+});
+
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Database synced");
+    client.login(token);
+  })
+  .catch(console.error);
