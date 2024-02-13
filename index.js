@@ -2,6 +2,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const sequelize = require("./database");
+// eslint-disable-next-line no-unused-vars
+// const gameWatcher = require("./tasks/gameWatcher");
 const { token } = require("./config.json");
 
 const client = new Client({
@@ -54,6 +56,10 @@ process.on("unhandledRejection", (error) => {
   console.error("Unhandled promise rejection:", error);
 });
 
+sequelize.sync({ force: true }).then(() => {
+  console.log("Database & tables created!");
+});
+
 sequelize
   .sync()
   .then(() => {
@@ -61,3 +67,7 @@ sequelize
     client.login(token);
   })
   .catch(console.error);
+
+module.exports = {
+  client,
+};
