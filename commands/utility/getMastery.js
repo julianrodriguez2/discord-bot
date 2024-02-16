@@ -4,6 +4,7 @@ const {
   getChampionMastery,
   getSummonerPUUID,
 } = require("../../utilities/riotApi");
+const { getChampionNameById } = require("../../utilities/championMapper");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -48,8 +49,10 @@ module.exports = {
 
       // Example response, consider formatting and limiting the output
       const topChampionMastery = masteryData[0];
+      const championName = getChampionNameById(topChampionMastery.championId);
+
       return interaction.reply(
-        `Top champion mastery for ${gameName} (${tagline}): Champion ID ${topChampionMastery.championId} with ${topChampionMastery.championPoints} points.`
+        `Top champion mastery for ${gameName} (${tagline}): ${championName} with ${topChampionMastery.championPoints} points.`
       );
     } catch (error) {
       console.error("Error fetching champion mastery:", error);

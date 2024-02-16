@@ -31,6 +31,17 @@ async function getSummonerIdByName(summonerName) {
   }
 }
 
+async function getSummonerIdByPUUID(encryptedPUUID) {
+  const url = `https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encryptedPUUID}?api_key=${riotKey}`;
+  try {
+    const response = await axios.get(url);
+    return response.data.id;
+  } catch (error) {
+    console.error(`Failed to fetch summoner ID for ${encryptedPUUID}:`, error);
+    return null;
+  }
+}
+
 // Fetches a summoner's PUUID
 async function getSummonerPUUID(gameName, tagline) {
   const encodedGameName = encodeURIComponent(gameName);
@@ -96,4 +107,5 @@ module.exports = {
   getCurrentGameBySummonerId,
   getSummonerPUUID,
   getChampionMastery,
+  getSummonerIdByPUUID,
 };
