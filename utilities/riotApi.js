@@ -35,6 +35,7 @@ async function getSummonerIdByPUUID(encryptedPUUID) {
   const url = `https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encryptedPUUID}?api_key=${riotKey}`;
   try {
     const response = await axios.get(url);
+    console.log(`Summoner ID: ${response.data.puuid}`);
     return response.data.id;
   } catch (error) {
     console.error(`Failed to fetch summoner ID for ${encryptedPUUID}:`, error);
