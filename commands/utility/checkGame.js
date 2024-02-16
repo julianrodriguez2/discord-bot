@@ -4,6 +4,7 @@ const {
   // getCurrentGameBySummonerId,
   getSummonerPUUID,
   getSummonerIdByPUUID,
+  getCurrentGameBySummonerId,
 } = require("../../utilities/riotApi");
 
 module.exports = {
@@ -28,33 +29,33 @@ module.exports = {
     const gameName = interaction.options.getString("gamename");
     const tagline = interaction.options.getString("tagline");
 
-    // try {
-    // Attempt to retrieve the PUUID for the specified Riot account
-    const puuid = await getSummonerPUUID(gameName, tagline);
-    if (!puuid) {
-      return interaction.reply(
-        "The specified Riot account has not been registered or could not be found."
-      );
-    }
-
-    // Fetch champion mastery data using the PUUID
-    const summonerID = await getSummonerIdByPUUID(puuid);
-    console.log(summonerID);
-    /* const ingame = await getCurrentGameBySummonerId(summonerID);
-      if (!masteryData || masteryData.length === 0) {
+    try {
+      // Attempt to retrieve the PUUID for the specified Riot account
+      const puuid = await getSummonerPUUID(gameName, tagline);
+      if (!puuid) {
         return interaction.reply(
-          "No champion mastery data found for the specified Riot account."
+          "The specified Riot account has not been registered or could not be found."
+        );
+      }
+
+      // Fetch champion mastery data using the PUUID
+      const summonerID = await getSummonerIdByPUUID(puuid);
+      console.log(summonerID);
+      const ingame = await getCurrentGameBySummonerId(summonerID);
+      if (!ingame) {
+        return interaction.reply(
+          "No current game found for the specified Riot account."
         );
       }
 
       return interaction.reply(
-        `Top champion mastery for ${gameName} (${tagline}): ${championName} with ${topChampionMastery.championPoints} points.`
+        `Current game type for ${gameName} (${tagline}): ${ingame}`
       );
     } catch (error) {
-      console.error("Error fetching champion mastery:", error);
+      console.error("Error fetching current game:", error);
       return interaction.reply(
-        "There was an error trying to fetch champion mastery for the specified Riot account. Please try again later."
+        "There was an error trying to fetch current game for the specified Riot account. Please try again later."
       );
-    } */
+    }
   },
 };
