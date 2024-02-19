@@ -1,10 +1,12 @@
+/* eslint-disable no-unused-vars */
 // In your commands directory, e.g., commands/register.js
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const RiotAccount = require("../../models/RiotAccount");
+const User = require("../../models/User");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("registerpuuid")
+    .setName("register")
     .setDescription("Registers your League of Legends PUUID with the bot.")
     .addStringOption((option) =>
       option
@@ -21,15 +23,25 @@ module.exports = {
   async execute(interaction) {
     const gameName = interaction.options.getString("gamename");
     const tagline = interaction.options.getString("tagline");
+    const userId = interaction.user.id;
     const serverId = interaction.guild.id;
 
     try {
-      // Check if the user is already registered
-      const [created] = await RiotAccount.findOrCreate({
-        where: { gameName: gameName, tagline: tagline, serverId: serverId },
-        defaults: { gameName: gameName, tagline: tagline, serverId: serverId },
+      const [user] = await User.findOrCreate({
+        where: { userId: userId },
       });
-      if (!created) {
+
+      const [riotAccount, riotAccountCreated] = await RiotAccount.findOrCreate({
+        where: { userId: userId, serverId: serverId },
+        defaults: {
+          userId: userId,
+          gameName: gameName,
+          tagline: tagline,
+          serverId: serverId,
+        },
+      });
+
+      if (!riotAccountCreated) {
         return interaction.reply(
           "This Riot account is already registered for this server."
         );

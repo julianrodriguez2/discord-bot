@@ -1,7 +1,16 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database");
+const User = require("./User");
 
 const RiotAccount = sequelize.define("RiotAccount", {
+  userId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    references: {
+      model: User,
+      key: "userId",
+    },
+  },
   gameName: {
     type: DataTypes.STRING,
     allowNull: false,
