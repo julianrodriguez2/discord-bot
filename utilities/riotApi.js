@@ -72,7 +72,8 @@ async function getCurrentGameBySummonerId(encryptedSummonerId) {
   const url = `https://na1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${encryptedSummonerId}?api_key=${riotKey}`;
   try {
     const response = await axios.get(url);
-    return response.data.gameMode;
+    console.log(response.data);
+    return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
       console.log(
@@ -103,10 +104,33 @@ async function getChampionMastery(encryptedPUUID) {
   }
 }
 
+async function getSummonerLeagueInfo(summonerID) {
+  const url = `https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerID}?api_key=${riotKey}`;
+  try {
+    const response = await axios.get(url);
+    const soloQueueInfo = response.data.find(
+      (entry) => entry.queueType === "RANKED_SOLO_5x5"
+    );
+    if (soloQueueInfo) {
+      return {
+        tier: soloQueueInfo.tier,
+        rank: soloQueueInfo.rank,
+        lp: soloQueueInfo.leaguePoints,
+      };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 module.exports = {
   getSummonerIdByName,
   getCurrentGameBySummonerId,
   getSummonerPUUID,
   getChampionMastery,
   getSummonerIdByPUUID,
+  getSummonerLeagueInfo,
 };

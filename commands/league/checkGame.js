@@ -1,11 +1,18 @@
 // In your commands directory, e.g., commands/getMastery.js
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { EmbedBuilder } = require("discord.js");
 const {
   // getCurrentGameBySummonerId,
   getSummonerPUUID,
   getSummonerIdByPUUID,
   getCurrentGameBySummonerId,
+  getSummonerLeagueInfo,
 } = require("../../utilities/riotApi");
+
+const {
+  getChampionNameById,
+  getChampionImage,
+} = require("../../utilities/championMapper");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -41,16 +48,39 @@ module.exports = {
       // Fetch champion mastery data using the PUUID
       const summonerID = await getSummonerIdByPUUID(puuid);
       console.log(summonerID);
-      const ingame = await getCurrentGameBySummonerId(summonerID);
-      if (!ingame) {
+      const currentGame = await getCurrentGameBySummonerId(summonerID);
+      const leagueInfo = await getSummonerLeagueInfo(summonerID);
+      if (!currentGame) {
         return interaction.reply(
           "No current game found for the specified Riot account."
         );
       }
 
-      return interaction.reply(
-        `Current game type for ${gameName} (${tagline}): ${ingame}`
+      const participant = currentGame.participants.find(
+        (p) => p.summonerName === gameName
       );
+      if (!participant) {
+        return interaction.reply("Player not found in the current game.");
+      }
+
+      const championName = getChampionNameById(participant.championId);
+      const championImage = getChampionImage(participant.championId);
+      const gameMode = currentGame.gameMode;
+      const currentLP = leagueInfo ? leagueInfo.lp : "N/A";
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${gameName}'s Current Game`)
+        .addFields(
+          { name: "Username", value: gameName, inline: true },
+          { name: "Champion", value: championName, inline: true },
+          { name: "Game Mode", value: gameMode, inline: true },
+          { name: "Current LP", value: currentLP.toString(), inline: true }
+        )
+        .setImage(championImage)
+        .setColor("#0099ff")
+        .setTimestamp();
+
+      return interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error("Error fetching current game:", error);
       return interaction.reply(

@@ -5,49 +5,58 @@ const {
   getSummonerPUUID,
 } = require("../../utilities/riotApi");
 const { getChampionNameById } = require("../../utilities/championMapper");
+const RiotAccount = require("../../models/RiotAccount");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("getmastery")
-    .setDescription(
-      "Retrieves League of Legends champion mastery for a registered account."
-    )
+    .setDescription("Retrieves League of Legends champion mastery.")
     .addStringOption((option) =>
       option
         .setName("gamename")
-        .setDescription(
-          "The League of Legends game name of the registered account"
-        )
-        .setRequired(true)
+        .setDescription("Optional: The game name of the account to query.")
     )
     .addStringOption((option) =>
       option
         .setName("tagline")
-        .setDescription("The tagline of the registered account (e.g., NA, EUW)")
-        .setRequired(true)
+        .setDescription("Optional: The tagline of the account to query.")
     ),
   async execute(interaction) {
-    const gameName = interaction.options.getString("gamename");
-    const tagline = interaction.options.getString("tagline");
+    const gameNameInput = interaction.options.getString("gamename");
+    const taglineInput = interaction.options.getString("tagline");
+
+    let gameName, tagline, puuid;
+
+    if (gameNameInput && taglineInput) {
+      gameName = gameNameInput;
+      tagline = taglineInput;
+      puuid = await getSummonerPUUID(gameName, tagline);
+    } else {
+      const userAccount = await RiotAccount.findOne({
+        where: { userId: interaction.user.id },
+      });
+      if (!userAccount) {
+        return interaction.reply(
+          "You do not have a registered account, and no account was specified."
+        );
+      }
+      gameName = userAccount.gameName;
+      tagline = userAccount.tagline;
+      puuid = await getSummonerPUUID(gameName, tagline);
+    }
+
+    if (!puuid) {
+      return interaction.reply(
+        "The specified account could not be found or has not been registered."
+      );
+    }
 
     try {
-      // Attempt to retrieve the PUUID for the specified Riot account
-      const puuid = await getSummonerPUUID(gameName, tagline);
-      if (!puuid) {
-        return interaction.reply(
-          "The specified Riot account has not been registered or could not be found."
-        );
-      }
-
-      // Fetch champion mastery data using the PUUID
       const masteryData = await getChampionMastery(puuid);
       if (!masteryData || masteryData.length === 0) {
-        return interaction.reply(
-          "No champion mastery data found for the specified Riot account."
-        );
+        return interaction.reply("No champion mastery data found.");
       }
 
-      // Example response, consider formatting and limiting the output
       const topChampionMastery = masteryData[0];
       const championName = getChampionNameById(topChampionMastery.championId);
 
@@ -57,7 +66,7 @@ module.exports = {
     } catch (error) {
       console.error("Error fetching champion mastery:", error);
       return interaction.reply(
-        "There was an error trying to fetch champion mastery for the specified Riot account. Please try again later."
+        "There was an error trying to fetch champion mastery. Please try again later."
       );
     }
   },
