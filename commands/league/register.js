@@ -3,6 +3,10 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const RiotAccount = require("../../models/RiotAccount");
 const User = require("../../models/User");
+const {
+  getSummonerPUUID,
+  getSummonerIdByPUUID,
+} = require("../../utilities/riotApi");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -25,6 +29,8 @@ module.exports = {
     const tagline = interaction.options.getString("tagline");
     const userId = interaction.user.id;
     const serverId = interaction.guild.id;
+    const puuid = await getSummonerPUUID(gameName, tagline);
+    const summonerId = await getSummonerIdByPUUID(puuid);
 
     try {
       const [user] = await User.findOrCreate({
@@ -38,6 +44,8 @@ module.exports = {
           gameName: gameName,
           tagline: tagline,
           serverId: serverId,
+          puuid: puuid,
+          summonerId: summonerId,
         },
       });
 

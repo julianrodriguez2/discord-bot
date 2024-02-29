@@ -42,7 +42,7 @@ module.exports = {
       }
       gameName = userAccount.gameName;
       tagline = userAccount.tagline;
-      puuid = await getSummonerPUUID(gameName, tagline);
+      puuid = userAccount.puuid;
     }
 
     if (!puuid) {
