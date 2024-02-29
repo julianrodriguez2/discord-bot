@@ -28,6 +28,10 @@ const RiotAccount = sequelize.define("RiotAccount", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  summonerId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 module.exports = RiotAccount;
