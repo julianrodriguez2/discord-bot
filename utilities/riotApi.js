@@ -126,6 +126,17 @@ async function getSummonerLeagueInfo(summonerID) {
   }
 }
 
+async function getCurrentChampionRotation() {
+  const url = `https://na1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=${riotKey}`;
+  try {
+    const response = await axios.get(url);
+    return response.data.freeChampionIds;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 module.exports = {
   getSummonerIdByName,
   getCurrentGameBySummonerId,
@@ -133,4 +144,5 @@ module.exports = {
   getChampionMastery,
   getSummonerIdByPUUID,
   getSummonerLeagueInfo,
+  getCurrentChampionRotation,
 };
