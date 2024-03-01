@@ -31,20 +31,22 @@ module.exports = {
         );
       }
 
-      if (session.players.includes(interaction.author.id)) {
+      if (session.players.includes(interaction.user.id)) {
         return interaction.reply("You are already registered for the game.");
       }
       session.players.push({
         userId: discordUserId,
         summonerId: riotAccount.summonerId,
       });
-      interaction.reply(
+      await interaction.reply(
         "You have been successfully registered for the custom game."
       );
 
       if (session.players.length === 10) {
         performMatchmaking(session);
-        interaction.followUp("Matchmaking complete. Teams have been formed.");
+        await interaction.followUp(
+          "Matchmaking complete. Teams have been formed."
+        );
       }
     } catch (error) {
       console.error("Error registering for custom game:", error);

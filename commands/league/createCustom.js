@@ -16,6 +16,9 @@ module.exports = {
     const session = {
       players: [],
       status: "waiting",
+      teamA: [],
+      teamB: [],
+      serverId: guildId,
     };
 
     activeSessions.set(guildId, session);

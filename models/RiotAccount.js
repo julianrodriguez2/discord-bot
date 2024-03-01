@@ -32,6 +32,11 @@ const RiotAccount = sequelize.define("RiotAccount", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  customGamesWon: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
 });
 
 module.exports = RiotAccount;
