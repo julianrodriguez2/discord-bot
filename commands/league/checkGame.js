@@ -6,7 +6,7 @@ const {
   getSummonerPUUID,
   getSummonerIdByPUUID,
   getCurrentGameBySummonerId,
-  getSummonerLeagueInfo,
+  getRankedSummonerLeagueInfo,
 } = require("../../utilities/riotApi");
 
 const {
@@ -49,7 +49,7 @@ module.exports = {
       const summonerID = await getSummonerIdByPUUID(puuid);
       console.log(summonerID);
       const currentGame = await getCurrentGameBySummonerId(summonerID);
-      const leagueInfo = await getSummonerLeagueInfo(summonerID);
+      const leagueInfo = await getRankedSummonerLeagueInfo(summonerID);
       if (!currentGame) {
         return interaction.reply(
           "No current game found for the specified Riot account."
