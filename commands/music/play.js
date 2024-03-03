@@ -1,10 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const {
-  joinVoiceChannel,
-  createAudioPlayer,
-  createAudioResource,
-  AudioPlayerStatus,
-} = require("@discordjs/voice");
+const { queueSong } = require("./musicUtils");
 const ytdl = require("ytdl-core");
 
 module.exports = {
@@ -25,29 +20,21 @@ module.exports = {
       return;
     }
 
-    const voiceChannel = interaction.member.voice.channel;
-    if (!voiceChannel) {
-      await interaction.reply(
-        "You need to be in a voice channel to play music!"
-      );
+    let title = "";
+    try {
+      const videoInfo = await ytdl.getInfo(url);
+      title = videoInfo.videoDetails.title;
+    } catch (error) {
+      console.error("Error fetching video info: ", error);
+      await interaction.reply("There was an error fetching the video details.");
       return;
     }
 
-    const connection = joinVoiceChannel({
-      channelId: voiceChannel.id,
-      guildId: interaction.guild.id,
-      adapterCreator: interaction.guild.voiceAdapterCreator,
-    });
+    const song = {
+      title: title,
+      url,
+    };
 
-    const stream = ytdl(url, { filter: "audioonly" });
-    const resource = createAudioResource(stream);
-    const player = createAudioPlayer();
-
-    player.play(resource);
-    connection.subscribe(player);
-
-    player.on(AudioPlayerStatus.Idle, () => connection.destroy());
-
-    await interaction.reply(`Now playing: ${url}`);
+    await queueSong(interaction, song);
   },
 };
