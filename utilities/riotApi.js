@@ -3,20 +3,6 @@ const axios = require("axios");
 // Replace 'YOUR_RIOT_API_KEY_HERE' with your actual Riot Games API key
 const { riotKey } = require("../config.json");
 
-// Utility function to get the platform routing value for a given region
-// Adjust the mapping as necessary based on Riot's API documentation
-// eslint-disable-next-line no-unused-vars
-const getPlatformRouting = (region) => {
-  const regionMapping = {
-    na1: "americas",
-    euw1: "europe",
-    eun1: "europe",
-    kr: "asia",
-    // Add other regions as needed
-  };
-  return regionMapping[region.toLowerCase()] || "americas";
-};
-
 // Fetches a summoner's ID by their summoner name and region
 async function getSummonerIdByName(summonerName) {
   const url = `https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURIComponent(
@@ -104,7 +90,7 @@ async function getChampionMastery(encryptedPUUID) {
   }
 }
 
-async function getSummonerLeagueInfo(summonerID) {
+async function getRankedSummonerLeagueInfo(summonerID) {
   const url = `https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerID}?api_key=${riotKey}`;
   try {
     const response = await axios.get(url);
@@ -116,6 +102,9 @@ async function getSummonerLeagueInfo(summonerID) {
         tier: soloQueueInfo.tier,
         rank: soloQueueInfo.rank,
         lp: soloQueueInfo.leaguePoints,
+        wins: soloQueueInfo.wins,
+        losses: soloQueueInfo.losses,
+        winstreak: soloQueueInfo.winstreak,
       };
     } else {
       return null;
@@ -143,6 +132,6 @@ module.exports = {
   getSummonerPUUID,
   getChampionMastery,
   getSummonerIdByPUUID,
-  getSummonerLeagueInfo,
+  getRankedSummonerLeagueInfo,
   getCurrentChampionRotation,
 };
