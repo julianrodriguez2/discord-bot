@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { activeSessions } = require("../../utilities/customGameUtils");
-const RiotAccount = require("../../models/RiotAccount");
+const LeagueAccount = require("../../models/LeagueAccount");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -30,7 +30,7 @@ module.exports = {
     try {
       // Update the customGamesWon field for each winning player
       for (const { summonerId } of winningPlayers) {
-        await RiotAccount.increment("customGamesWon", {
+        await LeagueAccount.increment("customGamesWon", {
           where: { summonerId, serverId: guildId },
         });
       }
