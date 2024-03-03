@@ -1,11 +1,13 @@
 /* eslint-disable no-unused-vars */
-// In your commands directory, e.g., commands/register.js
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const RiotAccount = require("../../models/RiotAccount");
+const LeagueAccount = require("../../models/LeagueAccount");
+
 const User = require("../../models/User");
 const {
   getSummonerPUUID,
   getSummonerIdByPUUID,
+  getRankedSummonerLeagueInfo,
 } = require("../../utilities/riotApi");
 
 module.exports = {
@@ -37,6 +39,8 @@ module.exports = {
         where: { userId: userId },
       });
 
+      const rankedInfo = await getRankedSummonerLeagueInfo(summonerId);
+
       const [riotAccount, riotAccountCreated] = await RiotAccount.findOrCreate({
         where: { userId: userId, serverId: serverId },
         defaults: {
@@ -54,6 +58,20 @@ module.exports = {
           "This Riot account is already registered for this server."
         );
       }
+
+      const [leagueAccount, leagueAccountCreated] =
+        await LeagueAccount.findOrCreate({
+          where: { userId: userId },
+          defaults: {
+            userId: userId,
+            lp: rankedInfo.lp,
+            wins: rankedInfo.wins,
+            losses: rankedInfo.losses,
+            rank: rankedInfo.rank,
+            tier: rankedInfo.tier,
+            hotStreak: rankedInfo.winstreak,
+          },
+        });
 
       return interaction.reply(
         `Successfully registered ${gameName} (${tagline}) for this server.`
