@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { queueSong } = require("./musicUtils");
+const { queueSong } = require("../../utilities/musicUtils");
 const ytdl = require("ytdl-core");
 
 module.exports = {

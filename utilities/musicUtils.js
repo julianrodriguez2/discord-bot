@@ -3,6 +3,7 @@ const {
   createAudioResource,
   createAudioPlayer,
   AudioPlayerStatus,
+  getVoiceConnection,
 } = require("@discordjs/voice");
 const ytdl = require("ytdl-core");
 
@@ -13,7 +14,8 @@ async function playSong(guildId, song) {
   const serverQueue = queue.get(guildId);
 
   if (!song) {
-    serverQueue.voiceChannel.leave();
+    const connection = getVoiceConnection(guildId);
+    if (connection) connection.destroy();
     queue.delete(guildId);
     return;
   }
