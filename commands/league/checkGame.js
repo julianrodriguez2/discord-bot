@@ -1,4 +1,3 @@
-// In your commands directory, e.g., commands/getMastery.js
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { EmbedBuilder } = require("discord.js");
 const {
@@ -13,6 +12,7 @@ const {
   getChampionNameById,
   getChampionImage,
 } = require("../../utilities/championMapper");
+const RiotAccount = require("../../models/RiotAccount");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -24,30 +24,46 @@ module.exports = {
         .setDescription(
           "The League of Legends game name of the registered account"
         )
-        .setRequired(true)
+        .setRequired(false)
     )
     .addStringOption((option) =>
       option
         .setName("tagline")
         .setDescription("The tagline of the registered account (e.g., NA, EUW)")
-        .setRequired(true)
+        .setRequired(false)
     ),
   async execute(interaction) {
-    const gameName = interaction.options.getString("gamename");
-    const tagline = interaction.options.getString("tagline");
+    const gameNameInput = interaction.options.getString("gamename");
+    const taglineInput = interaction.options.getString("tagline");
 
-    try {
-      // Attempt to retrieve the PUUID for the specified Riot account
-      const puuid = await getSummonerPUUID(gameName, tagline);
-      if (!puuid) {
+    let gameName, tagline, puuid;
+
+    if (gameNameInput && taglineInput) {
+      gameName = gameNameInput;
+      tagline = taglineInput;
+      puuid = await getSummonerPUUID(gameName, tagline);
+    } else {
+      const userAccount = await RiotAccount.findOne({
+        where: { userId: interaction.user.id },
+      });
+      if (!userAccount) {
         return interaction.reply(
-          "The specified Riot account has not been registered or could not be found."
+          "You do not have a registered account, and no account was specified."
         );
       }
+      gameName = userAccount.gameName;
+      tagline = userAccount.tagline;
+      puuid = userAccount.puuid;
+    }
 
-      // Fetch champion mastery data using the PUUID
+    if (!puuid) {
+      return interaction.reply(
+        "The specified account could not be found or has not been registered."
+      );
+    }
+
+    try {
       const summonerID = await getSummonerIdByPUUID(puuid);
-      console.log(summonerID);
       const currentGame = await getCurrentGameBySummonerId(summonerID);
       const leagueInfo = await getRankedSummonerLeagueInfo(summonerID);
       if (!currentGame) {
