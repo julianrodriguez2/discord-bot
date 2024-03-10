@@ -11,22 +11,45 @@ module.exports = {
         .setDescription("The question for the poll.")
         .setRequired(true)
     )
+    // Statically define options
     .addStringOption((option) =>
-      option
-        .setName("options")
-        .setDescription("The options for the poll separated by commas.")
-        .setRequired(true)
+      option.setName("option1").setDescription("Option 1 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option2").setDescription("Option 2 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option3").setDescription("Option 3 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option4").setDescription("Option 4 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option5").setDescription("Option 5 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option6").setDescription("Option 6 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option7").setDescription("Option 7 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option8").setDescription("Option 8 for the poll.")
+    )
+    .addStringOption((option) =>
+      option.setName("option9").setDescription("Option 9 for the poll.")
     ),
   async execute(interaction) {
     const question = interaction.options.getString("question");
-    const options = interaction.options
-      .getString("options")
-      .split(",")
-      .map((opt) => opt.trim())
-      .filter((opt) => opt !== "");
+    let options = [];
 
-    if (options.length > 9) {
-      return interaction.reply("You can only add up to 9 options for a poll.");
+    for (let i = 1; i <= 9; i++) {
+      const option = interaction.options.getString(`option${i}`);
+      if (option) options.push(option.trim());
+    }
+
+    if (options.length === 0) {
+      options = ["Yes", "No"];
     }
 
     const emojiList = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
