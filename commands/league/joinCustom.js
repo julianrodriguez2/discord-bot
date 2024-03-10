@@ -118,7 +118,7 @@ module.exports = {
       );
 
       if (session.players.length === 10) {
-        performMatchmaking(session);
+        performMatchmaking(session, interaction);
         await interaction.followUp(
           "Matchmaking complete. Teams have been formed."
         );

@@ -1,3 +1,5 @@
+const { EmbedBuilder } = require("discord.js");
+
 const activeSessions = new Map();
 const LeagueAccount = require("../models/LeagueAccount");
 
@@ -233,7 +235,7 @@ function calculateNewDifference(teamA, teamB, aIndex, bIndex) {
   return Math.abs(teamAScore - teamBScore);
 }
 
-async function performMatchmaking(session) {
+async function performMatchmaking(session, interaction) {
   await prepareSessionPlayers(session);
 
   const assignedPlayers = assignPlayersToRoles(session.players);
@@ -277,6 +279,23 @@ async function performMatchmaking(session) {
   balanceTeamsBySwappingPlayers(session.teamA, session.teamB);
   session.status = "in-progress";
   console.log("Matchmaking complete. Teams are balanced.");
+
+  const teamAMessage = session.teamA
+    .map((player) => `${player.id} (${player.assignedRole.toUpperCase()})`)
+    .join("\n");
+  const teamBMessage = session.teamB
+    .map((player) => `${player.id} (${player.assignedRole.toUpperCase()})`)
+    .join("\n");
+
+  const embed = new EmbedBuilder()
+    .setTitle("Matchmaking Complete: Teams are Balanced")
+    .setColor("#0099ff")
+    .addFields(
+      { name: "Team A", value: teamAMessage, inline: true },
+      { name: "Team B", value: teamBMessage, inline: true }
+    )
+    .setTimestamp();
+  await interaction.followUp({ embeds: [embed] });
 }
 
 module.exports = {
