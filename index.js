@@ -60,10 +60,6 @@ process.on("unhandledRejection", (error) => {
   console.error("Unhandled promise rejection:", error);
 });
 
-sequelize.sync({ force: true }).then(() => {
-  console.log("Database & tables created!");
-});
-
 sequelize
   .sync()
   .then(() => {
