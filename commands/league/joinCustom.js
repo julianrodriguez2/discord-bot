@@ -108,6 +108,13 @@ module.exports = {
         interaction.options.getString("role5"),
       ].filter(Boolean);
 
+      const uniqueRoles = new Set(rolePreferences);
+      if (uniqueRoles.size !== rolePreferences.length) {
+        return interaction.reply(
+          "You cannot select the same role more than once. Please choose different roles for each option."
+        );
+      }
+
       session.players.push({
         userId: discordUserId,
         summonerId: riotAccount.summonerId,

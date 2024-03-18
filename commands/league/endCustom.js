@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { activeSessions } = require("../../utilities/customGameUtils");
+const {
+  activeSessions,
+  performMatchmaking,
+} = require("../../utilities/customGameUtils");
 const LeagueAccount = require("../../models/LeagueAccount");
 
 module.exports = {
@@ -11,34 +14,50 @@ module.exports = {
         .setName("team")
         .setDescription("The winning team (teamA or teamB)")
         .setRequired(true)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("rematch")
+        .setDescription("Do you want to rematch with the same players?")
+        .setRequired(true)
     ),
   async execute(interaction) {
     const guildId = interaction.guild.id;
     const winningTeam = interaction.options.getString("team");
+    const rematch = interaction.options.getBoolean("rematch");
 
     if (!activeSessions.has(guildId)) {
       return interaction.reply("There is no active game session.");
     }
     const session = activeSessions.get(guildId);
 
-    const winningPlayers = session.teams[winningTeam];
+    const winningPlayers =
+      winningTeam === "teamA" ? session.teamA : session.teamB;
 
     if (!winningPlayers) {
       return interaction.reply("Invalid team specified.");
     }
 
     try {
-      // Update the customGamesWon field for each winning player
-      for (const { summonerId } of winningPlayers) {
+      for (const player of winningPlayers) {
         await LeagueAccount.increment("customGamesWon", {
-          where: { summonerId, serverId: guildId },
+          where: { userId: player.userId },
         });
       }
 
-      // Optionally, reset the session or perform other cleanup
       activeSessions.delete(guildId);
 
-      interaction.reply(`Custom game ended. Team ${winningTeam} wins!`);
+      if (rematch) {
+        performMatchmaking(session);
+        await interaction.reply(
+          `Team ${winningTeam} wins! Rematch initiated. New teams are being formed.`
+        );
+      } else {
+        activeSessions.delete(guildId);
+        await interaction.reply(
+          `Custom game ended. Team ${winningTeam} wins! Session closed.`
+        );
+      }
     } catch (error) {
       console.error("Error ending custom game:", error);
       return interaction.reply(

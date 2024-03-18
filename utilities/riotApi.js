@@ -106,9 +106,15 @@ async function getRankedSummonerLeagueInfo(summonerID) {
         losses: soloQueueInfo.losses,
         winstreak: soloQueueInfo.winstreak,
       };
-    } else {
-      return null;
     }
+    return {
+      tier: "Unranked",
+      rank: "Unranked",
+      lp: 0,
+      wins: 0,
+      losses: 0,
+      winstreak: false,
+    };
   } catch (error) {
     console.error(error);
     return null;

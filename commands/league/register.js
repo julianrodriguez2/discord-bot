@@ -23,7 +23,9 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName("tagline")
-        .setDescription("Your League of Legends tagline (e.g., NA, EUW)")
+        .setDescription(
+          "Your League of Legends tagline (DONT INCLUDE THE HASHTAG) Ex. NA1"
+        )
         .setRequired(true)
     ),
   async execute(interaction) {
@@ -31,25 +33,40 @@ module.exports = {
     const tagline = interaction.options.getString("tagline");
     const userId = interaction.user.id;
     const serverId = interaction.guild.id;
-    const puuid = await getSummonerPUUID(gameName, tagline);
-    const summonerId = await getSummonerIdByPUUID(puuid);
 
     try {
+      const puuid = await getSummonerPUUID(gameName, tagline);
+      if (!puuid) {
+        return interaction.reply(
+          "The specified account could not be found. Please check the game name and tagline."
+        );
+      }
+
+      const summonerId = await getSummonerIdByPUUID(puuid);
+
+      const rankedInfo = (await getRankedSummonerLeagueInfo(summonerId)) || {
+        tier: "Unranked",
+        rank: null,
+        lp: 0,
+        wins: 0,
+        losses: 0,
+        winstreak: false,
+      };
+
       const [user] = await User.findOrCreate({
         where: { userId: userId },
       });
 
-      const rankedInfo = await getRankedSummonerLeagueInfo(summonerId);
-
       const [riotAccount, riotAccountCreated] = await RiotAccount.findOrCreate({
-        where: { userId: userId, serverId: serverId },
+        where: { userId, serverId },
         defaults: {
-          userId: userId,
-          gameName: gameName,
-          tagline: tagline,
-          serverId: serverId,
-          puuid: puuid,
-          summonerId: summonerId,
+          userId,
+          serverId,
+          gameName,
+          tagline,
+          puuid,
+          summonerId,
+          summonerName: gameName,
         },
       });
 
